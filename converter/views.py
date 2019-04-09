@@ -17,7 +17,7 @@ def index(request):
                 }],
             }
             with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-                ydl.urlopen([link['link']])
+                ydl.download([link['link']])
 
     else:
         form = Download()
