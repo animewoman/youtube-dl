@@ -5,9 +5,9 @@
     <title>Converter</title>
 </head>
 <body>
-    <form method="get">
-        link:<br>
-        <input type="text" name="link">
+    <form method="post">
+        {% csrf_token %}
+        {{ form }}
         <input type="submit" value="Download">
     </form>
 </body>
