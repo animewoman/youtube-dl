@@ -5,6 +5,7 @@ audio/
 *.py[cod]
 *$py.class
 __init__.py
+.mp3
 # C extensions
 *.so
 

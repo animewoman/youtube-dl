@@ -5,13 +5,12 @@
     <title>Converter</title>
 </head>
 <body>
-    <form method="post">
+    <form  method="post" >
         {% csrf_token %}
-        {{ form }}
+        {{ form.as_p}}
         <input type="submit" value="Download">
     </form>
-
-    <form style="margin-left: 220px" action="/converter/history">
+    <form action="/converter/history">
         <input  type="submit" value="History">
     </form>
 </body>
