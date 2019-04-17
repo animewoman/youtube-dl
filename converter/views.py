@@ -1,13 +1,18 @@
 from __future__ import unicode_literals
 from django.shortcuts import render
 from .forms import Download
-import youtube_dl
 from .models import GetFiles
 from django.shortcuts import HttpResponse
 from django.utils.timezone import now
 from django.core.mail import EmailMessage
 from Youtub.settings import BASE_DIR
+from validate_email import validate_email
+import youtube_dl
 import os
+
+
+def val_email(email):
+    return validate_email(email, verify=True)
 
 
 def get_audio(temp):
@@ -19,33 +24,33 @@ def get_audio(temp):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'outtmpl': './audio/%(title)s',
+        'outtmpl': './audio/%(title)s.mp3',
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         meta = ydl.extract_info(
             temp
         )
 
-    x = GetFiles.objects.create(name=meta['title'], pub_date=now())
-    x.save()
+    GetFiles.objects.create(name=meta['title'], pub_date=now())
     return meta['title']
 
 
 def get_email(email, file):
     msg = EmailMessage('mp3-converter', 'message', to=[email])
-    msg.content_subtype = 'html'
-    file_dir = os.path.join(BASE_DIR, 'audio/{}'.format(file))
+    file_dir = os.path.join(BASE_DIR, 'audio/{}.mp3'.format(file))
     msg.attach_file(file_dir)
-    msg.send()
+    x = msg.send()
+    return x
 
 
 def index(request):
     if request.method == 'POST':
         form = Download(request.POST)
         if form.is_valid():
-            link = form.cleaned_data
-            temp = link['link']
-            email = link['email']
+            temp = form.cleaned_data['link']
+            email = form.cleaned_data['email']
+            if not val_email(email):
+                return HttpResponse('Your email is invalid')
             file_name = get_audio(temp)
             get_email(email, file_name)
             return HttpResponse('File has succesfully sent to your email')
@@ -56,6 +61,4 @@ def index(request):
 
 
 def history(request):
-    convert_to_list = GetFiles.objects.values_list('name', 'pub_date')
-    convert_to_list = list(convert_to_list)
-    return render(request, 'history.html', {'options': convert_to_list})
+    return render(request, 'history.html', {'options': GetFiles.objects.all()})
