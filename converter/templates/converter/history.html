@@ -6,7 +6,8 @@
 </head>
 <body>
     {% for thing in options %}
-    <li> {{ thing }}</li>
+    <li> {{ thing.name }}</li>
+     {{ thing.pub_date }}
     {% endfor %}
 </body>
 </html>
