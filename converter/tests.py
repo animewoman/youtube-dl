@@ -67,4 +67,3 @@ class DownloadYoutubeTest(TestCase):
         temp = get_audio('https://www.youtube.com/watch?v=PJVJUBvhbAY', 1)
         file_dir = os.path.join(BASE_DIR, 'audio/{}.mp3'.format(temp))
         self.assertRegexpMatches(file_dir, temp)
-

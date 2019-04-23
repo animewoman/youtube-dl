@@ -5,9 +5,10 @@ from .models import GetFiles
 from django.shortcuts import HttpResponse
 from django.utils.timezone import now
 from django.core.mail import EmailMessage
-from Youtub.settings import BASE_DIR
 from validate_email import validate_email
+from Youtub.settings import BASE_DIR
 import youtube_dl
+import time
 import os
 
 
@@ -35,10 +36,8 @@ def get_audio(temp):
     return meta['title']
 
 
-def get_email(email, file):
-    msg = EmailMessage('mp3-converter', 'message', to=[email])
-    file_dir = os.path.join(BASE_DIR, 'audio/{}.mp3'.format(file))
-    msg.attach_file(file_dir)
+def get_email(email):
+    msg = EmailMessage('mp3-converter', 'http://127.0.0.1:8000/converter/download', to=[email])
     x = msg.send()
     return x
 
@@ -46,13 +45,16 @@ def get_email(email, file):
 def index(request):
     if request.method == 'POST':
         form = Download(request.POST)
+        start = time.time()
         if form.is_valid():
             temp = form.cleaned_data['link']
             email = form.cleaned_data['email']
             if not val_email(email):
                 return HttpResponse('Your email is invalid')
-            file_name = get_audio(temp)
-            get_email(email, file_name)
+            get_audio(temp)
+            get_email(email)
+            end = time.time()
+            print(end - start, '\n\n\n')
             return HttpResponse('File has succesfully sent to your email')
     else:
         form = Download()
@@ -62,3 +64,8 @@ def index(request):
 
 def history(request):
     return render(request, 'history.html', {'options': GetFiles.objects.all()})
+
+
+def download(request):
+    file_dir = os.path.join(BASE_DIR, 'audio/{}.mp3'.format('asfdasf'))
+    return render(request, 'download.html', {'link': file_dir})
