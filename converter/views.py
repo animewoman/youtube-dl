@@ -11,6 +11,8 @@ import youtube_dl
 import time
 import os
 
+x = ''
+
 
 def val_email(email):
     return validate_email(email, verify=True)
@@ -25,21 +27,29 @@ def get_audio(temp):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'outtmpl': './audio/%(title)s.mp3',
+        'outtmpl': './converter/templates/converter/audio/%(title)s.mp3',
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         meta = ydl.extract_info(
             temp
         )
-
+    file_dir = os.path.join(BASE_DIR, 'converter/templates/converter/audio/{}.mp3'.format(meta['title']))
+    to_file = ''.join(file_dir.split())
+    print(file_dir, '\n', to_file)
+    os.rename(file_dir, to_file)
     GetFiles.objects.create(name=meta['title'], pub_date=now())
+    global x
+    nums = len(meta['title']) + 4
+    nums = len(file_dir) - nums
+    x = to_file[nums:]
+    print(x, '\n\n\n')
     return meta['title']
 
 
 def get_email(email):
     msg = EmailMessage('mp3-converter', 'http://127.0.0.1:8000/converter/download', to=[email])
-    x = msg.send()
-    return x
+    z = msg.send()
+    return z
 
 
 def index(request):
@@ -67,5 +77,8 @@ def history(request):
 
 
 def download(request):
-    file_dir = os.path.join(BASE_DIR, 'audio/{}.mp3'.format('asfdasf'))
+    global x
+    print(x, '\n\n\n')
+    file_dir = '/audio/{}'.format(x)
+    print(file_dir, '\n\n\n')
     return render(request, 'download.html', {'link': file_dir})
