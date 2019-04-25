@@ -1,15 +1,18 @@
 from __future__ import unicode_literals
+
+import os
+import time
+
+import youtube_dl
+from django.core.mail import EmailMessage
+from django.shortcuts import HttpResponse
 from django.shortcuts import render
+from django.utils.timezone import now
+from validate_email import validate_email
+
+from Youtub.settings import BASE_DIR
 from .forms import Download
 from .models import GetFiles
-from django.shortcuts import HttpResponse
-from django.utils.timezone import now
-from django.core.mail import EmailMessage
-from validate_email import validate_email
-from Youtub.settings import BASE_DIR
-import youtube_dl
-import time
-import os
 
 x = ''
 
@@ -27,13 +30,13 @@ def get_audio(temp):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
-        'outtmpl': './converter/templates/converter/audio/%(title)s.mp3',
+        'outtmpl': 'media/audio/%(title)s.mp3',
     }
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         meta = ydl.extract_info(
             temp
         )
-    file_dir = os.path.join(BASE_DIR, 'converter/templates/converter/audio/{}.mp3'.format(meta['title']))
+    file_dir = os.path.join(BASE_DIR, 'media/audio/{}.mp3'.format(meta['title']))
     to_file = ''.join(file_dir.split())
     print(file_dir, '\n', to_file)
     os.rename(file_dir, to_file)
@@ -53,12 +56,12 @@ def get_email(email):
 
 
 def index(request):
-    if request.method == 'POST':
+    if request.POST:
         form = Download(request.POST)
         start = time.time()
         if form.is_valid():
-            temp = form.cleaned_data['link']
-            email = form.cleaned_data['email']
+            temp = form.cleaned_data.get('link')
+            email = form.cleaned_data.get('email')
             if not val_email(email):
                 return HttpResponse('Your email is invalid')
             get_audio(temp)
@@ -79,6 +82,6 @@ def history(request):
 def download(request):
     global x
     print(x, '\n\n\n')
-    file_dir = '/audio/{}'.format(x)
+    file_dir = 'media/audio/{}'.format(x)
     print(file_dir, '\n\n\n')
     return render(request, 'download.html', {'link': file_dir})
