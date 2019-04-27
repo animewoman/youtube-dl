@@ -13,6 +13,7 @@ from validate_email import validate_email
 from Youtub.settings import BASE_DIR
 from .forms import Download
 from .models import GetFiles
+import asyncio
 
 x = ''
 
@@ -21,7 +22,7 @@ def val_email(email):
     return validate_email(email, verify=True)
 
 
-def get_audio(temp):
+async def get_audio(temp):
     ydl_opts = {
         'keepvideo': True,
         'format': 'bestaudio/best',
@@ -32,6 +33,7 @@ def get_audio(temp):
         }],
         'outtmpl': 'media/audio/%(title)s.mp3',
     }
+    await asyncio.sleep(2)
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         meta = ydl.extract_info(
             temp
@@ -49,7 +51,14 @@ def get_audio(temp):
     return meta['title']
 
 
-def get_email(email):
+async def send_done():
+    print('send_done')
+    return HttpResponse('Link has been sent to your email')
+
+
+async def get_email(email):
+    await asyncio.sleep(2)
+    print('asdgasg')
     msg = EmailMessage('mp3-converter', 'http://127.0.0.1:8000/converter/download', to=[email])
     z = msg.send()
     return z
@@ -64,11 +73,12 @@ def index(request):
             email = form.cleaned_data.get('email')
             if not val_email(email):
                 return HttpResponse('Your email is invalid')
-            get_audio(temp)
-            get_email(email)
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            loop.run_until_complete(main(temp, email))
+            loop.close()
             end = time.time()
             print(end - start, '\n\n\n')
-            return HttpResponse('File has succesfully sent to your email')
     else:
         form = Download()
 
@@ -85,3 +95,10 @@ def download(request):
     file_dir = 'media/audio/{}'.format(x)
     print(file_dir, '\n\n\n')
     return render(request, 'download.html', {'link': file_dir})
+
+
+async def main(temp, email):
+    task1 = asyncio.ensure_future(get_audio(temp))
+    task2 = asyncio.ensure_future(get_email(email))
+    task3 = asyncio.ensure_future(send_done())
+    await asyncio.gather(task1, task2, task3)
