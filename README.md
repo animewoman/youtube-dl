@@ -9,5 +9,5 @@
 
 # Запуск программы:
 
-Перед тем как запустить программу пропишите ```sh celery -A Youtub worker -l info ```
-Далее с другого терминала пропишите ```sh python manage.py runserver```
+- Перед тем как запустить программу пропишите ``` celery -A Youtub worker -l info ```
+- Далее с другого терминала пропишите ``` python manage.py runserver```
