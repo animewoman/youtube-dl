@@ -20,7 +20,6 @@ def val_email(email):
 def index(request):
     if request.POST:
         form = Download(request.POST)
-        start = time.time()
         if form.is_valid():
             temp = form.cleaned_data.get('link')
             email = form.cleaned_data.get('email')
@@ -29,8 +28,6 @@ def index(request):
             global x
             x = get_audio.delay(temp).get()
             get_email.delay(email)
-            end = time.time()
-            print(end - start, '\n\n\n')
     else:
         form = Download()
 
