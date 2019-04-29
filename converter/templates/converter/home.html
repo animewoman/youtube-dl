@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        function showAlert() {
+            alert("Your request is accepted. When the file is ready, the link will be sent to your email")
+        }
+    </script>
     <meta charset="UTF-8">
     <title>Converter</title>
 </head>
@@ -8,7 +13,7 @@
     <form  method="post" >
         {% csrf_token %}
         {{ form.as_p}}
-        <input type="submit" value="Download">
+        <input type="submit" value="Download" onclick="showAlert()">
     </form>
     <form action="/converter/history">
         <input  type="submit" value="History">
